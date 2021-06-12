@@ -20,6 +20,13 @@ If you use Strava, go to your
 and click "Request your archive". You'll get an email containing a ZIP
 file of all the GPS tracks you've logged so far. This can take several hours.
 
+## Deployment with Docker
+
+The Docker image is published to the GitHub Container Registry as
+[`ghcr.io/adamvig/derive`](https://github.com/users/AdamVig/packages/container/package/derive). The image is based on
+the official Nginx image, so [the usage instructions for that
+image](https://github.com/docker-library/docs/tree/master/nginx#how-to-use-this-image) apply here as well.
+
 ## Developing
 
 ```bash
