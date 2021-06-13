@@ -10,6 +10,9 @@ RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build-stage /app/index.html /app/bundle.js /app/style.css /usr/share/nginx/html/
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
+VOLUME "/tracks"
 
 LABEL org.opencontainers.image.source="https://github.com/AdamVig/derive"
 LABEL org.opencontainers.image.licenses="MIT"

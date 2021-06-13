@@ -27,6 +27,9 @@ The Docker image is published to the GitHub Container Registry as
 the official Nginx image, so [the usage instructions for that
 image](https://github.com/docker-library/docs/tree/master/nginx#how-to-use-this-image) apply here as well.
 
+To run the application with a preset group of files, mount the volume `/tracks` to a directory containing files of any
+type supported by the application.
+
 ## Developing
 
 ```bash
