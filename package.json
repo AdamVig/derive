@@ -7,9 +7,10 @@
     "type": "git"
   },
   "scripts": {
-    "serve": "webpack-serve",
+    "esbuild": "esbuild --bundle src/app.js --outdir=dist",
+    "serve": "npm run esbuild -- --servedir=.",
     "lint": "eslint src/*",
-    "build": "webpack -p"
+    "build": "npm run esbuild -- --minify --sourcemap"
   },
   "author": "Erik Price <github@erikprice.net>",
   "license": "MIT",
@@ -25,13 +26,7 @@
     "picomodal": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.0.0-rc.1",
-    "@babel/preset-env": "^7.0.0-rc.1",
-    "babel-loader": "^8.0.0-beta.4",
-    "babel-polyfill": "^6.26.0",
-    "eslint": "^5.3.0",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.1.0",
-    "webpack-serve": "^2.0.2"
+    "esbuild": "^0.19.4",
+    "eslint": "^5.3.0"
   }
 }
