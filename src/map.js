@@ -8,7 +8,7 @@ import * as ui from './ui';
 
 // Los Angeles is the center of the universe
 const INIT_COORDS = [34.0522, -118.243];
-
+const ZOOM = 13;
 
 const DEFAULT_OPTIONS = {
     theme: 'CartoDB.DarkMatter',
@@ -41,7 +41,7 @@ export default class GpxMap {
 
         this.map = leaflet.map('background-map', {
             center: INIT_COORDS,
-            zoom: 10,
+            zoom: ZOOM,
             preferCanvas: true,
         });
 
@@ -118,7 +118,11 @@ export default class GpxMap {
         this.clearScroll();
         this.viewAll.disable();
         this.switchTheme(this.options.theme);
-        this.requestBrowserLocation();
+        this.map.locate({
+	    setView: true,
+	    maxZoom: ZOOM,
+	    enableHighAccuracy: true,
+	});
     }
 
     clearScroll() {
@@ -211,21 +215,6 @@ export default class GpxMap {
 
             track.visible = !hideTrack;
         }
-    }
-
-    // Try to pull geo location from browser and center the map
-    requestBrowserLocation() {
-        navigator.geolocation.getCurrentPosition(pos => {
-            if (!this.scrolled && this.tracks.length === 0) {
-                this.map.panTo([pos.coords.latitude, pos.coords.longitude], {
-                    noMoveStart: true,
-                    animate: false,
-                });
-                // noMoveStart doesn't seem to have an effect, see Leaflet
-                // issue: https://github.com/Leaflet/Leaflet/issues/5396
-                this.clearScroll();
-            }
-        });
     }
 
     addTrack(track) {
