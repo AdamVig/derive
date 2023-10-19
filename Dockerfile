@@ -9,7 +9,7 @@ COPY ./ /app/
 RUN npm run build
 
 FROM nginx:alpine
-COPY --from=build-stage /app/index.html /app/bundle.js /app/style.css /usr/share/nginx/html/
+COPY --from=build-stage /app/index.html /app/bundle.js /usr/share/nginx/html/
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
 VOLUME "/tracks"

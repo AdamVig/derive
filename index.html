@@ -5,6 +5,77 @@
     <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-easybutton@2.0.0/src/easy-button.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+      :root {
+	  font-family: Avenir, Helvetica Neue, Segoe UI, Helvetica, arial, sans-serif;
+      }
+
+      a {
+	  color: black;
+      }
+
+      .pico-content {
+	  line-height: 1.2;
+      }
+
+      #background-map {
+	  background-color: white;
+	  position: absolute;
+	  top: 0;
+	  right: 0;
+	  bottom: 0;
+	  left: 0;
+	  z-index: -1;
+      }
+
+      blockquote {
+	  margin: 1em 0;
+	  font-style: italic;
+      }
+
+      blockquote cite {
+	  font-style: normal;
+	  vertical-align: super;
+	  font-size: smaller;
+      }
+
+      blockquote cite a:not(:hover) {
+	  text-decoration: none;
+      }
+
+      form {
+	  width: 500px;
+      }
+
+      .form-row {
+	  display: block;
+	  width: 500px;
+	  margin-top: 10px;
+      }
+
+      .form-row > label {
+	  min-width: 150px;
+	  display: inline-block;
+      }
+
+      .form-row > input, select, button {
+	  width: 200px;
+	  display: inline-block;
+	  box-sizing: border-box;
+      }
+
+      .failures {
+	  color: red;
+      }
+
+      ul.failures {
+	  max-height: 25vh;
+	  overflow-y: auto;
+	  border: 1px solid gray;
+	  padding-top: 1em;
+	  padding-bottom: 1em;
+      }
+    </style>
 
     <script src="bundle.js"></script>
     <title>d&eacute;rive.</title>

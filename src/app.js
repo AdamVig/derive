@@ -1,5 +1,3 @@
-import '../style.css';
-
 import GpxMap from './map';
 import extractTracks from './track'
 import {initialize} from './ui';
@@ -15,7 +13,7 @@ async function fetchTrackFileList() {
         .map(({name}) => name)
 	.filter((maybeTrackName) => maybeTrackName !== undefined)
         // Ensure each name ends with a supported file extension
-        .filter((name) => /.*\.(gpx|tcx|fit|igc)(\.gz)?$/.test(name));
+        .filter((name) => /.*\.(gpx|tcx|fit)?$/.test(name));
     
 }
 

@@ -5,13 +5,14 @@
 // See https://www.topografix.com/gpx/1/1 for details on the schema for
 // GPX files.
 
-import xml2js from 'xml2js';
+import { XMLParser } from 'fast-xml-parser';
 import FitParser from 'fit-file-parser';
-import Pako from 'pako';
-import IGCParser from 'igc-parser';
-import { parseSkizFile } from 'skiz-parser';
 
-const parser = new xml2js.Parser();
+const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix : '',
+    attributesGroupName : '$',
+});
 
 function extractGPXTracks(gpx) {
     if (!gpx.trk && !gpx.rte) {
@@ -21,52 +22,59 @@ function extractGPXTracks(gpx) {
 
     const parsedTracks = [];
 
-    gpx.trk && gpx.trk.forEach(trk => {
-        let name = trk.name && trk.name.length > 0 ? trk.name[0] : 'untitled';
-        let timestamp;
+    if (gpx.trk) {
+        const tracks = gpx.trk.length > 0 ? gpx.trk : [gpx.trk]
 
-        trk.trkseg.forEach(trkseg => {
+        tracks.forEach(trk => {
+            let name = trk.name && trk.name.length > 0 ? trk.name[0] : 'untitled';
+            let timestamp;
+            const trackSegments = trk.trkseg.length > 0 ? trk.trkseg : [trk.trkseg]
+
+            trackSegments.forEach(trkseg => {
+                let points = [];
+                for (let trkpt of trkseg.trkpt || []) {
+                    if (trkpt.time && typeof trkpt.time === 'string') {
+                        timestamp = new Date(trkpt.time);
+                    }
+                    if (typeof trkpt.$ !== 'undefined' &&
+                        typeof trkpt.$.lat !== 'undefined' &&
+                        typeof trkpt.$.lon !== 'undefined') {
+                        points.push({
+                            lat: parseFloat(trkpt.$.lat),
+                            lng: parseFloat(trkpt.$.lon),
+                            // These are available to us, but are currently unused
+                            // elev: parseFloat(trkpt.ele) || 0,
+                        });
+                    }
+                }
+
+                if (points.length > 0) {
+                    parsedTracks.push({timestamp, points, name});
+                }
+            });
+        });
+    }
+    if (gpx.rte) {
+        const routes = gpx.rte.length > 0 ? gpx.rte : [gpx.rte]
+        routes.forEach(rte => {
+            let name = rte.name && rte.name.length > 0 ? rte.name[0] : 'untitled';
+            let timestamp;
             let points = [];
-            for (let trkpt of trkseg.trkpt || []) {
-                if (trkpt.time && typeof trkpt.time[0] === 'string') {
-                    timestamp = new Date(trkpt.time[0]);
+            for (let pt of rte.rtept || []) {
+                if (pt.time && typeof pt.time[0] === 'string') {
+                    timestamp = new Date(pt.time[0]);
                 }
-                if (typeof trkpt.$ !== 'undefined' &&
-                    typeof trkpt.$.lat !== 'undefined' &&
-                    typeof trkpt.$.lon !== 'undefined') {
-                    points.push({
-                        lat: parseFloat(trkpt.$.lat),
-                        lng: parseFloat(trkpt.$.lon),
-                        // These are available to us, but are currently unused
-                        // elev: parseFloat(trkpt.ele) || 0,
-                    });
-                }
+                points.push({
+                    lat: parseFloat(pt.$.lat),
+                    lng: parseFloat(pt.$.lon),
+                });
             }
 
             if (points.length > 0) {
                 parsedTracks.push({timestamp, points, name});
             }
         });
-    });
-
-    gpx.rte && gpx.rte.forEach(rte => {
-        let name = rte.name && rte.name.length > 0 ? rte.name[0] : 'untitled';
-        let timestamp;
-        let points = [];
-        for (let pt of rte.rtept || []) {
-            if (pt.time && typeof pt.time[0] === 'string') {
-                timestamp = new Date(pt.time[0]);
-            }
-            points.push({
-                lat: parseFloat(pt.$.lat),
-                lng: parseFloat(pt.$.lon),
-            });
-        }
-
-        if (points.length > 0) {
-            parsedTracks.push({timestamp, points, name});
-        }
-    });
+    }
 
     return parsedTracks;
 }
@@ -78,24 +86,29 @@ function extractTCXTracks(tcx, name) {
     }
 
     const parsedTracks = [];
-    for (const act of tcx.Activities[0].Activity) {
-        for (const lap of act.Lap || []) {
+    const activities = tcx.Activities.Activity.length > 0 ? tcx.Activities.Activity : [tcx.Activities.Activity];
+    for (const act of activities) {
+        if (!act.Lap) {
+            continue
+        }
+        const laps = act.Lap.length > 0 ? act.Lap : [act.Lap];
+        for (const lap of laps) {
             if (!lap.Track || lap.Track.length === 0) {
                 continue;
             }
-            let trackPoints = lap.Track[0].Trackpoint.filter(it => it.Position);
+            let trackPoints = lap.Track.Trackpoint.filter(it => it.Position);
             let timestamp;
             let points = []
 
             for (let trkpt of trackPoints) {
-                if (trkpt.Time && typeof trkpt.Time[0] === 'string') {
-                    timestamp = new Date(trkpt.Time[0]);
+                if (trkpt.Time && typeof trkpt.Time === 'string') {
+                    timestamp = new Date(trkpt.Time);
                 }
                 points.push({
-                    lat: parseFloat(trkpt.Position[0].LatitudeDegrees[0]),
-                    lng: parseFloat(trkpt.Position[0].LongitudeDegrees[0]),
+                    lat: parseFloat(trkpt.Position.LatitudeDegrees),
+                    lng: parseFloat(trkpt.Position.LongitudeDegrees),
                     // These are available to us, but are currently unused
-                    // elev: parseFloat(trkpt.ElevationMeters[0]) || 0,
+                    // elev: parseFloat(trkpt.ElevationMeters) || 0,
                 });
             }
 
@@ -130,45 +143,13 @@ function extractFITTracks(fit, name) {
     return points.length > 0 ? [{timestamp, points, name}] : [];
 }
 
-function extractIGCTracks(igc) {
-  const points = [];
-  let timestamp = null;
-  for (const fix of igc.fixes) {
-    points.push({
-        lat: fix.latitude,
-        lng: fix.longitude,
-        // Other available fields: pressureAltitude, gpsAltitude, etc.
-    });
-    timestamp = timestamp || new Date(fix.timestamp);
-  }
-  const name = 'igc';
-  return points.length > 0 ? [{timestamp, points, name}] : [];
-}
-
-function extractSKIZTracks(skiz) {
-    const points = [];
-    let timestamp = null;
-
-    for (const node of skiz.trackNodes) {
-        points.push({
-            lat: node.latitude,
-            lng: node.longitude,
-        });
-
-        node.timestamp && (timestamp = node.timestamp);
-    }
-
-    const name = 'skiz';
-    return points.length > 0 ? [{timestamp, points, name}] : [];
-}
-
-function readFile(file, encoding, isGzipped) {
+function readFile(file, encoding) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const result = e.target.result;
             try {
-                return resolve(isGzipped ? Pako.inflate(result) : result);
+                return resolve(result);
             } catch (e) {
                 return reject(e);
             }
@@ -183,31 +164,26 @@ function readFile(file, encoding, isGzipped) {
 }
 
 export default function extractTracks(file) {
-    const isGzipped = /\.gz$/i.test(file.name);
-    const strippedName = file.name.replace(/\.gz$/i, '');
-    const format = strippedName.split('.').pop().toLowerCase();
+    const format = file.name.split('.').pop().toLowerCase();
 
     switch (format) {
     case 'gpx':
     case 'tcx': /* Handle XML based file formats the same way */
 
-        return readFile(file, 'text', isGzipped)
+        return readFile(file, 'text')
             .then(textContents => new Promise((resolve, reject) => {
-                parser.parseString(textContents, (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else if (result.gpx) {
-                        resolve(extractGPXTracks(result.gpx));
-                    } else if (result.TrainingCenterDatabase) {
-                        resolve(extractTCXTracks(result.TrainingCenterDatabase, strippedName));
-                    } else {
-                        reject(new Error('Invalid file type.'));
-                    }
-                });
-            }));
+                const result = parser.parse(textContents)
+                if (result.gpx) {
+                    resolve(extractGPXTracks(result.gpx));
+                } else if (result.TrainingCenterDatabase) {
+                    resolve(extractTCXTracks(result.TrainingCenterDatabase, file.name));
+                } else {
+                    reject(new Error('Invalid file type.'));
+                }
+	    }));
 
     case 'fit':
-        return readFile(file, 'binary', isGzipped)
+        return readFile(file, 'binary')
             .then(contents => new Promise((resolve, reject) => {
                 const parser = new FitParser({
                     force: true,
@@ -218,29 +194,7 @@ export default function extractTracks(file) {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(extractFITTracks(result, strippedName));
-                    }
-                });
-            }));
-
-    case 'igc':
-        return readFile(file, 'text', isGzipped)
-            .then(textContents => new Promise((resolve, reject) => {
-                try {
-                    resolve(extractIGCTracks(IGCParser.parse(textContents, {lenient: true})));
-                } catch(err) {
-                    reject(err);
-                }
-            }));
-
-    case 'skiz':
-        return readFile(file, 'binary', isGzipped)
-            .then(contents => new Promise((resolve, reject) => {
-                parseSkizFile(contents, (err, result) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(extractSKIZTracks(result));
+                        resolve(extractFITTracks(result, file.name));
                     }
                 });
             }));
