@@ -3,21 +3,13 @@ import extractTracks from './track';
 import Image from './image';
 
 const AVAILABLE_THEMES = [
-    'CartoDB.DarkMatter',
-    'CartoDB.DarkMatterNoLabels',
-    'CartoDB.Positron',
-    'CartoDB.PositronNoLabels',
-    'Esri.WorldImagery',
-    'OpenStreetMap.Mapnik',
-    'OpenTopoMap',
-    'Stamen.Terrain',
-    'Stamen.TerrainBackground',
-    'Stamen.Toner',
-    'Stamen.TonerLite',
-    'Stamen.TonerBackground',
-    'Stamen.Watercolor',
-    'CyclOSM',
-    'No map',
+    'Jawg.Streets',
+    'Jawg.Terrain',
+    'Jawg.Lagoon',
+    'Jawg.Sunny',
+    'Jawg.Dark',
+    'Jawg.Light',
+    'Jawg.Matrix',
 ];
 
 const MODAL_CONTENT = {

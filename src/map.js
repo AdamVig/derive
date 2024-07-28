@@ -11,10 +11,10 @@ const INIT_COORDS = [34.0522, -118.243];
 const ZOOM = 13;
 
 const DEFAULT_OPTIONS = {
-    theme: 'CartoDB.DarkMatter',
+    theme: 'Jawg.Light',
     lineOptions: {
         color: '#0CB1E8',
-        weight: 1,
+        weight: 2,
         opacity: 0.5,
         smoothFactor: 1,
         overrideExisting: true,
@@ -136,7 +136,9 @@ export default class GpxMap {
         }
 
         if (themeName !== 'No map') {
-            this.mapTiles = leaflet.tileLayer.provider(themeName);
+            this.mapTiles = leaflet.tileLayer.provider(themeName, {
+                accessToken: 'gHU3GOJ9CldORDOczXbatz4wIzlWSiRugciliYvCG6znUIakh3Jl6N3CQP1q3td9'
+            });
             this.mapTiles.addTo(this.map, {detectRetina: true});
         }
     }
