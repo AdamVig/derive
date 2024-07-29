@@ -3,6 +3,8 @@ import leafletImage from 'leaflet-image';
 import 'leaflet-providers';
 import 'leaflet-easybutton';
 import 'leaflet-easybutton/src/easy-button.css';
+import 'leaflet.locatecontrol';
+import 'leaflet.locatecontrol/dist/L.Control.Locate.min.css';
 
 import * as ui from './ui';
 
@@ -63,6 +65,17 @@ export default class GpxMap {
             }],
         }).addTo(this.map);
 
+        leaflet.control.locate({
+            keepCurrentZoomLevel: true,
+            drawCircle: false,
+            locateOptions: {
+                maxZoom: ZOOM,
+                watch: true,
+                setView: true,
+                enableHighAccuracy: true
+            }
+        }).addTo(this.map).start();
+
         this.markScrolled = () => {
             this.map.removeEventListener('movestart', this.markScrolled);
             this.scrolled = true;
@@ -70,11 +83,6 @@ export default class GpxMap {
 
         this.clearScroll();
         this.switchTheme(this.options.theme);
-        this.map.locate({
-	    setView: true,
-	    maxZoom: ZOOM,
-	    enableHighAccuracy: true,
-	});
     }
 
     clearScroll() {
