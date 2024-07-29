@@ -2,6 +2,7 @@ import leaflet from 'leaflet';
 import leafletImage from 'leaflet-image';
 import 'leaflet-providers';
 import 'leaflet-easybutton';
+import 'leaflet-easybutton/src/easy-button.css';
 
 import * as ui from './ui';
 
