@@ -43,30 +43,9 @@ export default class GpxMap {
             center: INIT_COORDS,
             zoom: ZOOM,
             preferCanvas: true,
+            attributionControl: false,
+            zoomControl: false,
         });
-
-        leaflet.easyButton({
-            type: 'animate',
-            states: [{
-                icon: 'fa-camera fa-lg',
-                stateName: 'default',
-                title: 'Export as png',
-                onClick: () => {
-                    let modal = ui.showModal('exportImage')
-                        .afterClose(() => modal.destroy());
-
-                    document.getElementById('render-export').onclick = (e) => {
-                        e.preventDefault();
-
-                        let output = document.getElementById('export-output');
-                        output.innerHTML = 'Rendering <i class="fa fa-cog fa-spin"></i>';
-
-                        let form = document.getElementById('export-settings').elements;
-                        this.screenshot(form.format.value, output);
-                    };
-                }
-            }]
-        }).addTo(this.map);
 
         leaflet.easyButton({
             type: 'animate',
@@ -83,40 +62,12 @@ export default class GpxMap {
             }],
         }).addTo(this.map);
 
-        leaflet.easyButton({
-            type: 'animate',
-            states: [{
-                icon: 'fa-filter fa-lg',
-                stateName: 'default',
-                title: 'Filter displayed tracks',
-                onClick: () => {
-                    ui.buildFilterModal(this.tracks, this.filters, (f) => {
-                        this.filters = f;
-                        this.applyFilters();
-                    }).show();
-                }
-            }]
-        }).addTo(this.map);
-
-        this.viewAll = leaflet.easyButton({
-            type: 'animate',
-            states: [{
-                icon: 'fa-map fa-lg',
-                stateName: 'default',
-                title: 'Zoom to all tracks',
-                onClick: () => {
-                    this.center();
-                },
-            }],
-        }).addTo(this.map);
-
         this.markScrolled = () => {
             this.map.removeEventListener('movestart', this.markScrolled);
             this.scrolled = true;
         };
 
         this.clearScroll();
-        this.viewAll.disable();
         this.switchTheme(this.options.theme);
         this.map.locate({
 	    setView: true,
@@ -220,7 +171,6 @@ export default class GpxMap {
     }
 
     addTrack(track) {
-        this.viewAll.enable();
         let lineOptions = Object.assign({}, this.options.lineOptions);
 
         if (lineOptions.detectColors) {
